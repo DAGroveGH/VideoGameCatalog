@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="VideoGameCatalog.Client/VideoGameCatalog.Client.csproj" />
+  <Project Path="VideoGameCatalog.Server/VideoGameCatalog.Server.csproj" />
+  <Project Path="VideoGameCatalog.Shared/VideoGameCatalog.Shared.csproj" />
+</Solution>
