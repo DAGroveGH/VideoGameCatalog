@@ -1,6 +1,3 @@
 @VideoGameCatalog.Server_HostAddress = http://localhost:5267
 
-GET {{VideoGameCatalog.Server_HostAddress}}/weatherforecast/
-Accept: application/json
-
 ###
