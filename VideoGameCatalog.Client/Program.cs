@@ -41,4 +41,11 @@ builder.Services.AddHttpClient<IVideoGameApiService, VideoGameApiService>(
         client.BaseAddress = new Uri(config["Api:BaseUrl"]!);
     });
 
+builder.Services.AddHttpClient<VideoGameCSVApiService>(
+    (sp, client) =>
+    {
+        var config = sp.GetRequiredService<IConfiguration>();
+        client.BaseAddress = new Uri(config["Api:BaseUrl"]!);
+    });
+
 await builder.Build().RunAsync();

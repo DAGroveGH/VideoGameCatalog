@@ -1,0 +1,45 @@
+﻿@using VideoGameCatalog.Client.Services
+@using VideoGameCatalog.Shared.Models
+@* @inject IVideoGameApiService VideoGameApiService; *@
+@inject VideoGameCSVApiService VideoGameCSVApiService;
+@page "/Catalog"
+
+<h3>Catalog</h3>
+
+@if (_games is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <p>We have @_games.Count video games in our catalog.</p>
+    @foreach (var game in _games)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">@game.Title (@game.YourPrice)</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Genre: @game.Genre</h6>
+                <p class="card-text">@game.Publisher</p>
+            </div>
+        </div>
+    }
+}
+
+
+
+@code {
+    private IReadOnlyList<VideoGameModel>? _games;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // _games = await VideoGameApiService.GetAllVideoGamesAsync();
+            _games = await VideoGameCSVApiService.GetAllVideoGamesCSVAsync();
+            // Console.WriteLine(HttpClient.DefaultRequestHeaders.ToString());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching video games: {ex.Message}");
+        }
+    }
+}

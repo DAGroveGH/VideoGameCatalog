@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace VideoGameCatalog.Shared.Models
+﻿namespace VideoGameCatalog.Client.ViewModels
 {
-    public class VideoGameModel
+    public class VideoGameViewModel
     {
-        public int Id { get; set; }
         public string? Platform { get; set; }
         public string? Category { get; set; }
         public string? UserRecordType { get; set; }
@@ -28,6 +23,8 @@ namespace VideoGameCatalog.Shared.Models
         public string? ManualCondition { get; set; }
         public string? Notes { get; set; }
         public string? Tags { get; set; }
-        public string? Metacritic { get; set; }
+
+        public List<string>? TagList { get; set; }
+        public int? Metacritic { get; set; }
     }
 }

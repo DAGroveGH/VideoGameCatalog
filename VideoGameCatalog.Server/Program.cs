@@ -17,6 +17,7 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddScoped<IVideoGameRepository, VideoGameRepository>();
+builder.Services.AddSingleton<VideoGameCSVRepository>();
 
 var app = builder.Build();
 

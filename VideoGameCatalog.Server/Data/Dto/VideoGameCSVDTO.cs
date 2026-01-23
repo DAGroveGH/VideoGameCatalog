@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace VideoGameCatalog.Shared.Models
+﻿namespace VideoGameCatalog.Server.Data.Dto
 {
-    public class VideoGameModel
+    public class VideoGameCSVDTO
     {
-        public int Id { get; set; }
         public string? Platform { get; set; }
         public string? Category { get; set; }
         public string? UserRecordType { get; set; }
