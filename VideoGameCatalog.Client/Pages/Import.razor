@@ -1,0 +1,73 @@
+﻿@page "/import"
+@inject IConfiguration Config
+
+<h3>Import Collection CSV</h3>
+
+<RadzenCard Style="max-width:600px; margin-top:20px;">
+
+    <div class="upload-dropzone">
+
+        <RadzenUpload Url="@($"{ApiBaseUrl}/api/import/csv")"
+                      Accept=".csv"
+                      Auto="true"
+                      Multiple="false"
+                      ChooseText="Drag & Drop CSV here or Click to Upload"
+                      Progress=@OnProgress
+                      Complete=@OnComplete
+                      Error=@OnError
+                      Style="width:100%" />
+
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_message))
+    {
+        <RadzenAlert Severity="AlertSeverity.Info" Style="margin-top:15px">
+            @_message
+        </RadzenAlert>
+    }
+
+</RadzenCard>
+
+<style>
+
+    .upload-dropzone {
+        border: 2px dashed #6c757d;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        background: #f8f9fa;
+    }
+
+</style>
+
+@code {
+
+    string ApiBaseUrl => Config["Api:BaseUrl"]!;
+
+    string? _message;
+
+    void OnProgress(UploadProgressArgs args)
+    {
+        _message = $"Uploading {args.Progress}%";
+        StateHasChanged();
+    }
+
+    void OnComplete(UploadCompleteEventArgs args)
+    {
+        _message = $"Import completed.";
+
+        if (!string.IsNullOrWhiteSpace(args.RawResponse))
+        {
+            _message += $" Result: {args.RawResponse}";
+        }
+
+        StateHasChanged();
+    }
+
+    void OnError(UploadErrorEventArgs args)
+    {
+        _message = "Upload failed.";
+        StateHasChanged();
+    }
+
+}

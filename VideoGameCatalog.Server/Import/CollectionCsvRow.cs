@@ -1,12 +1,11 @@
-﻿namespace VideoGameCatalog.Shared.Models;
+﻿namespace VideoGameCatalog.Server.Import;
 
-public class VideoGameModel
+public class CollectionCsvRow
 {
-    public int Id { get; set; }
-    public string Title { get; set; } = "";
     public string Platform { get; set; } = "";
     public string? Category { get; set; }
     public string? UserRecordType { get; set; }
+    public string Title { get; set; } = "";
     public string? Country { get; set; }
     public string? ReleaseType { get; set; }
     public string? Publisher { get; set; }
@@ -25,6 +24,4 @@ public class VideoGameModel
     public string? Notes { get; set; }
     public string? Tags { get; set; }
     public int? Metacritic { get; set; }
-    public string? CoverImageUrl { get; set; }
-
 }

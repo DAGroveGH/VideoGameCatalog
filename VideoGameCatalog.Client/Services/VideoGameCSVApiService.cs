@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using VideoGameCatalog.Shared.Models;
 
 namespace VideoGameCatalog.Client.Services
@@ -14,22 +13,10 @@ namespace VideoGameCatalog.Client.Services
             Console.WriteLine("VideoGameCSVApiService initialized with HttpClient base address: " + _httpClient.BaseAddress);
         }
 
-        public async Task<IReadOnlyList<VideoGameModel>> GetAllVideoGamesCSVAsync()
+        public async Task<IReadOnlyList<VideoGameModel>> GetAllAsync()
         {
-            try
-            {
-                var games = new List<VideoGameModel>();
-                games = await _httpClient.GetFromJsonAsync<List<VideoGameModel>>("api/videogamescsv");
-
-                return games ?? [];
-            }
-            catch (Exception ex)
-            {
-
-                Console.WriteLine("Error fetching video games: " + ex.Message);
-
-                return [];
-            }
+            return await _httpClient.GetFromJsonAsync<List<VideoGameModel>>("api/games")
+                ?? new List<VideoGameModel>();
         }
 
         public async Task<VideoGameModel?> GetVideoGameCSVByIdAsync(int id)

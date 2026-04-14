@@ -1,10 +1,22 @@
 ﻿@using VideoGameCatalog.Client.Services
 @using VideoGameCatalog.Shared.Models
+@using VideoGameCatalog.Client.Components.Dashboard
 @page "/"
 
 @inject IVideoGameApiService VideoGameApiService;
+@inject VideoGameCSVApiService VideoGameCSVApiService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Video Game Report</PageTitle>
 
-<h1>Hello, World!</h1>
+<DashboardOverview Games="@_games" />
 
+@code {
+    private IReadOnlyList<VideoGameModel>? _games;
+    private List<VideoGameModel> _filteredGames = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _games = await VideoGameCSVApiService.GetAllAsync();
+    }
+
+}

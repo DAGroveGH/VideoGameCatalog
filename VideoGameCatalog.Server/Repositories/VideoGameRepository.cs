@@ -1,18 +1,28 @@
-﻿using VideoGameCatalog.Server.Data;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
+using VideoGameCatalog.Server.Data;
 using VideoGameCatalog.Shared.Models;
 
-namespace VideoGameCatalog.Server.Repositories
-{
-    public class VideoGameRepository : IVideoGameRepository
-    {
-        public IReadOnlyList<VideoGameModel> GetAllVideoGames()
-        {
-            return MockVideoGameData.Games;
-        }
+namespace VideoGameCatalog.Server.Repositories;
 
-        public VideoGameModel? GetVideoGameById(int id)
-        {
-            return MockVideoGameData.Games.FirstOrDefault(game => game.Id == id);
-        }
+public class VideoGameRepository : IVideoGameRepository
+{
+    private readonly ApplicationDbContext _db;
+
+    public VideoGameRepository(ApplicationDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<IReadOnlyList<VideoGameModel>> GetAllAsync()
+    {
+        var items = await _db.CollectionItems
+            .Include(x => x.Platform)
+            .Include(x => x.Publisher)
+            .Include(x => x.Developer)
+            .Include(x => x.Genre)
+            .ToListAsync();
+
+        return items.Adapt<List<VideoGameModel>>();
     }
 }

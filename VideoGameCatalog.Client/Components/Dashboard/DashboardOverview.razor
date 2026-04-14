@@ -1,0 +1,241 @@
+﻿@using System.Globalization
+@using VideoGameCatalog.Client.Services
+@using VideoGameCatalog.Shared.Models
+@using VideoGameCatalog.Shared.Utilities
+
+@inject IVideoGameApiService GameService;
+@inject VideoGameCSVApiService CSVService;
+<RadzenStack ">
+
+    <RadzenRow Gap="20px">
+
+        <RadzenColumn Size="6" Style="display:flex">
+            <RadzenCard Style="flex:1; display:flex; flex-direction:column; justify-content:center">
+                <RadzenText Style="font-size:2rem">
+                    Collection Value: @TotalCollectionValue.ToString("C")
+                </RadzenText>
+                <RadzenText Style="font-size:1.3rem">
+                    Games: @GameValue.ToString("C")
+                </RadzenText>
+                <RadzenText Style="font-size:1.3rem">
+                    Systems: @SystemValue.ToString("C")
+                </RadzenText>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <RadzenColumn Size="3" Style="display:flex">
+            <RadzenCard Style="flex:1; display:flex; flex-direction:column; justify-content:center">
+                <RadzenText Style="font-size:2rem">
+                    Unique Games
+                </RadzenText>
+                <RadzenText Style="font-size:1.3rem">
+                    @UniqueGames.ToString()
+                </RadzenText>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <RadzenColumn Size="3" Style="display:flex">
+            <RadzenCard Style="flex:1; display:flex; flex-direction:column; justify-content:center">
+                <RadzenText Style="font-size:2rem">
+                    Total Systems
+                </RadzenText>
+                <RadzenText Style="font-size:1.3rem">
+                    @TotalSystems.ToString()
+                </RadzenText>
+            </RadzenCard>
+        </RadzenColumn>
+
+    </RadzenRow>
+    <RadzenRow Gap="20px" Style="margin-top:20px">
+
+        <RadzenColumn Size="4">
+            <RadzenCard>
+                <h3>Games by Platform</h3>
+                <RadzenChart Style="height:350px">
+                    <RadzenPieSeries Data="@PlatformCounts"
+                                     CategoryProperty="Platform"
+                                     ValueProperty="Count" 
+                                     Title="Unique Games"/>
+                    <RadzenLegend Visible="false" />
+
+                </RadzenChart>
+            </RadzenCard>
+        </RadzenColumn>
+
+        <RadzenColumn Size="8">
+            <RadzenCard>
+                <h3>Collection Value by Platform</h3>
+                <RadzenChart Style="height:350px">
+                    <RadzenColumnSeries Data="@PlatformValues"
+                                        CategoryProperty="ShortLabel"
+                                        ValueProperty="TotalValue"
+                                        Title="Value" />
+                    <RadzenColumnOptions Radius="5" />
+                    <RadzenCategoryAxis Padding="20" LabelAutoRotation="@rotation" />
+                    <RadzenChartTooltip />
+                    <RadzenValueAxis Formatter="@FormatAsUSD">
+                        <RadzenGridLines Visible="true" />
+                        <RadzenAxisTitle Text="Total Value (USD)" />
+                    </RadzenValueAxis>
+                    <RadzenLegend Visible="false" />
+                    <RadzenSeriesDataLabels Visible="true" />
+                </RadzenChart>
+            </RadzenCard>
+        </RadzenColumn>
+
+    </RadzenRow>
+</RadzenStack>
+
+
+@code {
+
+    [Parameter]
+    public IEnumerable<VideoGameModel>? Games { get; set; }
+
+    int rotation = -55;
+
+    decimal TotalValue;
+
+    int TotalGames;
+    int UniqueGames;
+    int TotalSystems;
+
+    decimal GameValue;
+    decimal SystemValue;
+    decimal TotalCollectionValue;
+
+    List<PlatformCount> PlatformCounts = new();
+    List<PlatformValue> PlatformValues = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Games == null)
+        {
+            Games = await CSVService.GetAllAsync();
+            Console.WriteLine($"Loaded {Games.Count()} games for dashboard.");
+        }
+
+        Console.WriteLine($"Before calculate metrics... games: {Games.ToList().Count}");
+        CalculateMetrics();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Games != null)
+        {
+            CalculateMetrics();
+        }
+    }
+
+    void CalculateMetrics()
+    {
+        Console.WriteLine($"In calculating metrics!: {Games!.ToList().Count}");
+        Console.WriteLine($"In calculating metrics?: {Games?.ToList().Count}");
+
+        var collectionItems = Games!.ToList();
+
+        //good to here
+
+        Console.WriteLine($"Total collection items: {collectionItems.Count}");
+
+        TotalGames = collectionItems.Count(g => g.Category == "Games");
+
+        Console.WriteLine($"Total games: {TotalGames}");
+
+        UniqueGames = collectionItems
+            .Where(g => g.Category == "Games")
+            .Select(g => g.Title)
+            .Distinct()
+            .Count();
+
+        Console.WriteLine($"Unique game titles: {UniqueGames}");
+
+        TotalSystems = collectionItems.Count(g => g.Category == "Systems");
+
+        Console.WriteLine($"Total systems: {TotalSystems}");
+
+        GameValue = collectionItems
+            .Where(g => g.Category == "Games")
+            .Sum(GamePriceCalculator.GetGameValue);
+
+        Console.WriteLine($"Total game collection value: {GameValue:C}");
+
+        SystemValue = collectionItems
+            .Where(g => g.Category == "Systems")
+            .Sum(GamePriceCalculator.GetGameValue);
+
+        Console.WriteLine($"Total system collection value: {SystemValue:C}");
+
+        TotalCollectionValue = GameValue + SystemValue;
+
+        Console.WriteLine($"Total collection value: {TotalCollectionValue:C}");
+
+        PlatformCounts = collectionItems
+            .Where(g => g.Category == "Games")
+            .GroupBy(x => x.Platform)
+            .Select(g => new PlatformCount
+            {
+                Platform = g.Key ?? "Unknown",
+                Count = g.Count()
+            })
+            .ToList();
+
+        Console.WriteLine($"Platform counts: {PlatformCounts}");
+
+        PlatformValues = collectionItems
+            .Where(g => g.Category == "Games")
+            .GroupBy(x => x.Platform)
+            .Select(g => new PlatformValue
+            {
+                Platform = g.Key ?? "Unknown",
+                TotalValue = g.Sum(GamePriceCalculator.GetGameValue)
+            })
+            .ToList();
+
+        Console.WriteLine($"Platform values: {PlatformValues}");
+    }
+
+    string FormatAsUSD(object value)
+    {
+        return ((double)value).ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
+    }
+
+    class PlatformCount
+    {
+        public string Platform { get; set; } = "";
+        public int Count { get; set; }
+    }
+
+    class PlatformValue
+    {
+        public string Platform { get; set; } = "";
+        public decimal TotalValue { get; set; }
+
+        public string ShortLabel => Platform.ToLower() switch
+        {
+            "sony playstation 5" => "PS5",
+            "sony playstation 4" => "PS4",
+            "sony playstation 3" => "PS3",
+            "sony playstation 2" => "PS2",
+            "sony playstation" => "PS1",
+            "sony psp" => "PSP",
+            "sony ps vita" => "PS Vita",
+            "nintendo game boy" => "GB",
+            "nintendo game boy color" => "GBC",
+            "nintendo game boy advance" => "GBA",
+            "nintendo ds" => "DS",
+            "nintendo 3ds" => "3DS",
+            "nintendo entertainment system" => "NES",
+            "super nintendo entertainment system" => "SNES",
+            "nintendo gamecube" => "GameCube",
+            "nintendo wii" => "Wii",
+            "nintendo switch" => "Switch",
+            "nintendo switch 2" => "Switch 2",
+            "microsoft xbox" => "Xbox",
+            "microsoft xbox 360" => "Xbox 360",
+            "microsoft xbox one" => "Xbox One",
+            "microsoft xbox series x" => "Xbox Series X/S",
+            _ => Platform // fallback
+        };
+    }
+}

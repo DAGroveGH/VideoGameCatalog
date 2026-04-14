@@ -1,45 +1,199 @@
 ﻿@using VideoGameCatalog.Client.Services
 @using VideoGameCatalog.Shared.Models
-@* @inject IVideoGameApiService VideoGameApiService; *@
-@inject VideoGameCSVApiService VideoGameCSVApiService;
-@page "/Catalog"
+
+@inject VideoGameCSVApiService VideoGameCSVApiService
+@inject VideoGameImageService GameImageService
+
+@page "/catalog"
 
 <h3>Catalog</h3>
 
-@if (_games is null)
+@if (showSearch)
 {
-    <p>Loading...</p>
+    <div class="search-container">
+
+        <RadzenTextBox @bind-Value="searchTerm"
+                       Placeholder="Search games..."
+                       Style="width:100%" />
+
+        <RadzenButton Text="Search"
+                      Icon="search"
+                      Click="@OnSearchClicked"
+                      Style="margin-top:10px;" />
+
+    </div>
 }
 else
 {
-    <p>We have @_games.Count video games in our catalog.</p>
-    @foreach (var game in _games)
-    {
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">@game.Title (@game.YourPrice)</h5>
-                <h6 class="card-subtitle mb-2 text-muted">Genre: @game.Genre</h6>
-                <p class="card-text">@game.Publisher</p>
-            </div>
-        </div>
-    }
+    <RadzenButton Text="New Search"
+                  Icon="search"
+                  Click="@ShowSearch"
+                  Style="margin-bottom:20px;" />
 }
 
+@if (_pagedGames is null)
+{
+    <RadzenText Text="Loading..." />
+}
+else
+{
+    <RadzenRow Gap="20px" class="catalog-row">
+        @foreach (var game in _pagedGames)
+        {
+            <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                <RadzenCard class="game-card">
 
+                    @if (_images.TryGetValue(game.Title, out var img) && !string.IsNullOrEmpty(img))
+                    {
+                        <img src="@img" class="game-image" />
+                    }
+                    else
+                    {
+                        <div class="game-image-placeholder">
+                            @GetInitials(game.Title)
+                        </div>
+                    }
+
+                    <RadzenText Text="@game.Title" class="game-title" />
+                    <RadzenText Text="@game.Platform" class="game-platform" />
+
+                </RadzenCard>
+            </RadzenColumn>
+        }
+    </RadzenRow>
+
+    <RadzenPager Count="@(_filteredGames?.Count ?? 0)"
+                 PageSize="@_pageSize"
+                 PageChanged="OnPageChanged" />
+}
+
+<style>
+
+    .search-container {
+        width: 60%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-bottom: 30px;
+    }
+
+    .catalog-row {
+        padding-top: 20px;
+    }
+
+    .game-card {
+        padding: 10px;
+    }
+
+    .game-image {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .game-image-placeholder {
+        height: 150px;
+        background: #2a2a2a;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .game-title {
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    .game-platform {
+        color: gray;
+        font-size: 0.85rem;
+    }
+
+</style>
 
 @code {
+
     private IReadOnlyList<VideoGameModel>? _games;
+    private List<VideoGameModel> _filteredGames = new();
+    private List<VideoGameModel> _pagedGames = new();
+    private Dictionary<string, string?> _images = new();
+
+    private string searchTerm = "";
+    private bool showSearch = true;
+
+    private int _pageSize = 20;
+    private int _currentPage = 0;
+
     protected override async Task OnInitializedAsync()
     {
-        try
+        _games = await VideoGameCSVApiService.GetAllAsync();
+        _filteredGames = _games.ToList();
+
+        await LoadPage(0);
+    }
+
+    private string GetInitials(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title)) return "N/A";
+
+        var words = title.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        return words.Length == 1
+            ? words[0][..Math.Min(2, words[0].Length)].ToUpper()
+            : $"{words[0][0]}{words[1][0]}".ToUpper();
+    }
+
+    private async Task OnSearchClicked()
+    {
+        if (_games is null) return;
+
+        if (string.IsNullOrWhiteSpace(searchTerm))
         {
-            // _games = await VideoGameApiService.GetAllVideoGamesAsync();
-            _games = await VideoGameCSVApiService.GetAllVideoGamesCSVAsync();
-            // Console.WriteLine(HttpClient.DefaultRequestHeaders.ToString());
+            _filteredGames = _games.ToList();
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Error fetching video games: {ex.Message}");
+            _filteredGames = _games
+                .Where(g =>
+                    g.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    g.Platform.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
+
+        showSearch = false;
+
+        await LoadPage(0);
+    }
+
+    private void ShowSearch()
+    {
+        showSearch = true;
+    }
+
+    private async Task LoadPage(int page)
+    {
+        _currentPage = page;
+
+        _pagedGames = _filteredGames
+            .Skip(page * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+
+        var titles = _pagedGames.Select(g => g.Title);
+
+        var newImages = await GameImageService.GetImagesAsync(titles);
+
+        foreach (var kv in newImages)
+        {
+            _images[kv.Key] = kv.Value;
+        }
+    }
+
+    private async Task OnPageChanged(PagerEventArgs args)
+    {
+        await LoadPage(args.PageIndex);
     }
 }

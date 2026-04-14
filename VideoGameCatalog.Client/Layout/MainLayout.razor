@@ -1,16 +1,31 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+<RadzenLayout>
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+            <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            <RadzenLabel Text="Video Game Catalog" />
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenSidebar Responsive="false" Style="width: max-content">
+        <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)" ShowArrow="false">
+            <RadzenPanelMenuItem Text="Home" Icon="home" Path="/" />
+            <RadzenPanelMenuItem Text="Catalog" Icon="menu_book" Path="/catalog" />
+            <RadzenPanelMenuItem Text="Import" Icon="note_add" Path="/import" />
+            <RadzenPanelMenuItem Text="Report" Icon="assignment" Path="/report"/>
+            <RadzenPanelMenuItem Text="Admin" Icon="settings" >
+                <RadzenPanelMenuItem Text="Manage Genres" Icon="category" Path="/admin/genres" />
+                <RadzenPanelMenuItem Text="Manage Platforms" Icon="devices" Path="/admin/platforms" />
+            </RadzenPanelMenuItem>
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+    <RadzenBody>
+        <div class="rz-p-4">
             @Body
-        </article>
-    </main>
-</div>
+        </div>
+    </RadzenBody>
+</RadzenLayout>
+
+@code {
+    bool sidebarExpanded = true;
+}

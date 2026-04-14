@@ -1,27 +1,6 @@
-//using Microsoft.AspNetCore.Components.Web;
-//using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-//using VideoGameCatalog.Client;
-//using VideoGameCatalog.Client.Services;
-
-//var builder = WebAssemblyHostBuilder.CreateDefault(args);
-//builder.RootComponents.Add<App>("#app");
-//builder.RootComponents.Add<HeadOutlet>("head::after");
-
-//builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-//builder.Services.AddHttpClient<IVideoGameApiService, VideoGameApiService>(
-//    (sp, client) =>
-//    {
-//        var config = sp.GetRequiredService<IConfiguration>();
-//        client.BaseAddress = new Uri(config["Api:BaseUrl"] ?? builder.HostEnvironment.BaseAddress);
-//    });
-
-//await builder.Build().RunAsync();
-
-
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Radzen;
 using VideoGameCatalog.Client;
 using VideoGameCatalog.Client.Services;
 
@@ -47,5 +26,15 @@ builder.Services.AddHttpClient<VideoGameCSVApiService>(
         var config = sp.GetRequiredService<IConfiguration>();
         client.BaseAddress = new Uri(config["Api:BaseUrl"]!);
     });
+
+// HttpClient for image service
+builder.Services.AddHttpClient<VideoGameImageService>(
+    (sp, client) =>
+    {
+        var config = sp.GetRequiredService<IConfiguration>();
+        client.BaseAddress = new Uri(config["Api:BaseUrl"]!);
+    });
+
+builder.Services.AddRadzenComponents();
 
 await builder.Build().RunAsync();
