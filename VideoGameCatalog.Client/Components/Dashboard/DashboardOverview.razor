@@ -104,43 +104,40 @@
     decimal SystemValue;
     decimal TotalCollectionValue;
 
+    private bool _loaded = false;
+
     List<PlatformCount> PlatformCounts = new();
     List<PlatformValue> PlatformValues = new();
 
     protected override async Task OnInitializedAsync()
     {
-        if (Games == null)
+        if (!_loaded)
         {
-            Games = await CSVService.GetAllAsync();
-            Console.WriteLine($"Loaded {Games.Count()} games for dashboard.");
-        }
+            if (Games == null)
+            {
+                Games = await CSVService.GetAllAsync();
+                Console.WriteLine($"Loaded {Games.Count()} games for dashboard.");
+            }
 
-        Console.WriteLine($"Before calculate metrics... games: {Games.ToList().Count}");
-        CalculateMetrics();
+            CalculateMetrics();
+            _loaded = true;
+        }
     }
 
     protected override void OnParametersSet()
     {
-        if (Games != null)
+        if (Games != null && !_loaded)
         {
             CalculateMetrics();
+            _loaded = true;
         }
     }
 
     void CalculateMetrics()
     {
-        Console.WriteLine($"In calculating metrics!: {Games!.ToList().Count}");
-        Console.WriteLine($"In calculating metrics?: {Games?.ToList().Count}");
-
         var collectionItems = Games!.ToList();
 
-        //good to here
-
-        Console.WriteLine($"Total collection items: {collectionItems.Count}");
-
         TotalGames = collectionItems.Count(g => g.Category == "Games");
-
-        Console.WriteLine($"Total games: {TotalGames}");
 
         UniqueGames = collectionItems
             .Where(g => g.Category == "Games")
@@ -148,27 +145,17 @@
             .Distinct()
             .Count();
 
-        Console.WriteLine($"Unique game titles: {UniqueGames}");
-
         TotalSystems = collectionItems.Count(g => g.Category == "Systems");
-
-        Console.WriteLine($"Total systems: {TotalSystems}");
 
         GameValue = collectionItems
             .Where(g => g.Category == "Games")
             .Sum(GamePriceCalculator.GetGameValue);
 
-        Console.WriteLine($"Total game collection value: {GameValue:C}");
-
         SystemValue = collectionItems
             .Where(g => g.Category == "Systems")
             .Sum(GamePriceCalculator.GetGameValue);
 
-        Console.WriteLine($"Total system collection value: {SystemValue:C}");
-
         TotalCollectionValue = GameValue + SystemValue;
-
-        Console.WriteLine($"Total collection value: {TotalCollectionValue:C}");
 
         PlatformCounts = collectionItems
             .Where(g => g.Category == "Games")
@@ -180,8 +167,6 @@
             })
             .ToList();
 
-        Console.WriteLine($"Platform counts: {PlatformCounts}");
-
         PlatformValues = collectionItems
             .Where(g => g.Category == "Games")
             .GroupBy(x => x.Platform)
@@ -191,8 +176,6 @@
                 TotalValue = g.Sum(GamePriceCalculator.GetGameValue)
             })
             .ToList();
-
-        Console.WriteLine($"Platform values: {PlatformValues}");
     }
 
     string FormatAsUSD(object value)

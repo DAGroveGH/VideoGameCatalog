@@ -41,23 +41,25 @@ else
         @foreach (var game in _pagedGames)
         {
             <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
-                <RadzenCard class="game-card">
+                <NavLink href="@($"/game/{game.Id}")" class="card-link">
+                    <RadzenCard class="game-card">
 
-                    @if (_images.TryGetValue(game.Title, out var img) && !string.IsNullOrEmpty(img))
-                    {
-                        <img src="@img" class="game-image" />
-                    }
-                    else
-                    {
-                        <div class="game-image-placeholder">
-                            @GetInitials(game.Title)
-                        </div>
-                    }
+                        @if (_images.TryGetValue(game.Title, out var img) && !string.IsNullOrEmpty(img))
+                        {
+                            <img src="@img" class="game-image" />
+                        }
+                        else
+                        {
+                            <div class="game-image-placeholder">
+                                @GetInitials(game.Title)
+                            </div>
+                        }
 
-                    <RadzenText Text="@game.Title" class="game-title" />
-                    <RadzenText Text="@game.Platform" class="game-platform" />
+                        <RadzenText Text="@game.Title" class="game-title" />
+                        <RadzenText Text="@game.Platform" class="game-platform" />
 
-                </RadzenCard>
+                    </RadzenCard>
+                </NavLink>
             </RadzenColumn>
         }
     </RadzenRow>
@@ -81,6 +83,20 @@ else
     .catalog-row {
         padding-top: 20px;
     }
+
+    .card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+        /* remove visited + active weirdness */
+        .card-link:visited,
+        .card-link:active,
+        .card-link:hover {
+            text-decoration: none;
+            color: inherit;
+        }
 
     .game-card {
         padding: 10px;

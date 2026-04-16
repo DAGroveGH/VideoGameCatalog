@@ -5,4 +5,5 @@ namespace VideoGameCatalog.Server.Repositories;
 public interface IVideoGameRepository
 {
     Task<IReadOnlyList<VideoGameModel>> GetAllAsync();
+    Task<VideoGameModel?> GetByIdAsync(int id);
 }

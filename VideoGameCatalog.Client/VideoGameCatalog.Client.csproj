@@ -18,8 +18,4 @@
     <ProjectReference Include="..\VideoGameCatalog.Shared\VideoGameCatalog.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Components\VideoGame\" />
-  </ItemGroup>
-
 </Project>

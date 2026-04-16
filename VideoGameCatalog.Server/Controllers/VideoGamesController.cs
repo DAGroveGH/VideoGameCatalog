@@ -20,4 +20,14 @@ public class VideoGamesController : ControllerBase
         var games = await _repo.GetAllAsync();
         return Ok(games);
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var game = await _repo.GetByIdAsync(id);
+        if (game == null)
+            return NotFound();
+        return Ok(game);
+
+    }
 }

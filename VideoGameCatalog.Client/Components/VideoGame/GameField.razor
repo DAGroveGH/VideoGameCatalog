@@ -1,0 +1,22 @@
+﻿@if (!string.IsNullOrWhiteSpace(Value))
+{
+    <div class="game-field">
+        <div class="game-field-label">@Label</div>
+        <div class="game-field-value">@Value</div>
+    </div>
+}
+<style>
+    .game-field-label {
+        font-size: 18px;
+        color: black;
+    }
+
+    .game-field-value {
+        font-size: 14px;
+        color: slategrey;
+    }
+</style>
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string? Value { get; set; }
+}

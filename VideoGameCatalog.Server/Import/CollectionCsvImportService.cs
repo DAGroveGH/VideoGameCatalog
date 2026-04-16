@@ -26,7 +26,9 @@ public class CollectionCsvImportService
             MissingFieldFound = null,
             BadDataFound = null,
             TrimOptions = TrimOptions.Trim,
-            IgnoreBlankLines = true
+            IgnoreBlankLines = true,
+            PrepareHeaderForMatch = args => args.Header.ToLower()
+
         };
 
         using var csv = new CsvReader(reader, config);
@@ -136,6 +138,8 @@ public class CollectionCsvImportService
 
                 if (existing == null)
                     continue;
+
+                Console.WriteLine($"existing metacritic: {existing.Metacritic} \nrow metacritic: {row.Metacritic}");
 
                 existing.Category = row.Category;
                 existing.UserRecordType = row.UserRecordType;

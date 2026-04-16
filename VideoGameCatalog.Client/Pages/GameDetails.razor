@@ -1,0 +1,114 @@
+﻿@page "/game/{Id:int}"
+@using VideoGameCatalog.Client.Components.VideoGame
+@using VideoGameCatalog.Client.Services
+@using VideoGameCatalog.Shared.Models
+@using VideoGameCatalog
+
+@inject VideoGameCSVApiService VideoCSVGameService
+
+
+@if (game == null)
+{
+    <RadzenText Text="Loading..." />
+}
+else
+{
+    <!-- HERO IMAGE -->
+    <div class="hero-container">
+        @if (!string.IsNullOrEmpty(game.CoverImageUrl))
+        {
+            <img src="@game.CoverImageUrl" style="width:100%; border-radius:8px;" />
+        }
+        else
+        {
+            <div class="game-image-placeholder">
+                @GetInitials(game.Title)
+            </div>
+        }
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="details-container">
+        <RadzenText TextStyle="TextStyle.H2">@game.Title</RadzenText>
+    
+
+        <!-- BASIC INFO -->
+        <h3>Basic Information</h3>
+        <div class="details-grid">
+            <GameField Label="Title" Value="@game.Title" />
+            <GameField Label="Platform" Value="@game.Platform" />
+            <GameField Label="Category" Value="@game.Category" />
+            <GameField Label="Genre" Value="@game.Genre" />
+            <GameField Label="Release Type" Value="@game.ReleaseType" />
+            <GameField Label="Country" Value="@game.Country" />
+            <GameField Label="Publisher" Value="@game.Publisher" />
+            <GameField Label="Developer" Value="@game.Developer" />
+        </div>
+
+        <hr />
+
+        <!-- PRICING -->
+        <h3>Pricing</h3>
+        <div class="details-grid">
+            <GameField Label="Loose Price" Value="@game.PriceLoose?.ToString("C")" />
+            <GameField Label="CIB Price" Value="@game.PriceCIB?.ToString("C")" />
+            <GameField Label="New Price" Value="@game.PriceNew?.ToString("C")" />
+            <GameField Label="Your Price" Value="@game.YourPrice?.ToString("C")" />
+            <GameField Label="Price Paid" Value="@game.PricePaid?.ToString("C")" />
+        </div>
+
+        <hr />
+
+        <!-- COLLECTION -->
+        <h3>Collection</h3>
+        <div class="details-grid">
+            <GameField Label="Ownership" Value="@game.Ownership" />
+            <GameField Label="Record Type" Value="@game.UserRecordType" />
+            <GameField Label="Item Condition" Value="@game.ItemCondition" />
+            <GameField Label="Box Condition" Value="@game.BoxCondition" />
+            <GameField Label="Manual Condition" Value="@game.ManualCondition" />
+        </div>
+
+        <hr />
+
+        <!-- ADDITIONAL -->
+        <h3>Additional Info</h3>
+        <div class="details-grid">
+            <GameField Label="Metacritic" Value="@game.Metacritic?.ToString()" />
+            <GameField Label="Tags" Value="@game.Tags" />
+            <GameField Label="Created At" Value="@game.CreatedAt?.ToString("MMM dd, yyyy")" />
+        </div>
+
+      @*   <hr /> *@
+
+        @* <!-- NOTES -->
+        <h3>Notes</h3>
+        <p class="notes">@game.Notes</p> *@
+
+    </div>
+}
+
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private VideoGameModel? game;
+
+    protected override async Task OnInitializedAsync()
+    {
+        game = await VideoCSVGameService.GetGameByIdAsync(Id);
+    }
+
+    private string GetInitials(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title)) return "N/A";
+
+        var words = title.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        return words.Length == 1
+            ? words[0][..Math.Min(2, words[0].Length)].ToUpper()
+            : $"{words[0][0]}{words[1][0]}".ToUpper();
+    }
+}

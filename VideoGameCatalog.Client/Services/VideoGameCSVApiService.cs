@@ -23,5 +23,10 @@ namespace VideoGameCatalog.Client.Services
         {
             return await _httpClient.GetFromJsonAsync<VideoGameModel>($"api/videogamescsv/{id}");
         }
+
+        public async Task<VideoGameModel?> GetGameByIdAsync(int id)
+        {
+            return await _httpClient.GetFromJsonAsync<VideoGameModel>($"api/games/{id}");
+        }
     }
 }

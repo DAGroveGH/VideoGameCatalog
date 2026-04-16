@@ -25,4 +25,12 @@ public class VideoGameRepository : IVideoGameRepository
 
         return items.Adapt<List<VideoGameModel>>();
     }
+
+    public async Task<VideoGameModel?> GetByIdAsync(int id)
+    {
+        var item = await _db.CollectionItems
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        return item?.Adapt<VideoGameModel>();
+    }
 }
